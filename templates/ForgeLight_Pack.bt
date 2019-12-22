@@ -1,0 +1,38 @@
+//------------------------------------------------
+//--- 010 Editor v10.0 Binary Template
+//
+//      File: ForgeLight_Pack.bt
+//   Authors: Rhett
+//   Version: 0.1
+//   Purpose: Parse ForgeLight 'pack' asset archives.
+//  Category: Game
+// File Mask: *.pack
+//  ID Bytes: None
+//------------------------------------------------
+
+typedef struct {
+    uint32 nameLength;
+    char name[nameLength];
+    uint32 dataOffset <format=hex>;
+    uint32 dataLength;
+    uint32 crc32Checksum <format=hex>;
+} ASSET;
+
+typedef struct {
+    uint32 nextChunk <format=hex>;
+    uint32 fileAmount;
+    ASSET assets[fileAmount] <optimize=false>;
+} CHUNK;
+
+struct PACK {
+
+    // Loop until we run out of chunks
+    while(true)
+    {
+        CHUNK chunk;
+        if(chunk.nextChunk == 0)
+            break;
+        FSeek(chunk.nextChunk);
+    }
+	
+} pack;
