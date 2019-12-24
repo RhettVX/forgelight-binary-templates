@@ -1,0 +1,46 @@
+//------------------------------------------------
+//--- 010 Editor v10.0 Binary Template
+//
+//      File: ForgeLight_Pack2.bt
+//   Authors: Rhett
+//   Version: 0.1
+//   Purpose: Parse ForgeLight 'pack2' asset archives.
+//  Category: Game
+// File Mask: *.pack2
+//  ID Bytes: 50 41 4B
+//------------------------------------------------  
+
+string isZippedComment(uint32 flag) {
+    if (flag == 0x01 || flag == 0x11) {
+        return "Zipped";
+    } else if (flag == 0x10 || flag == 0x00) {
+        return "Unzipped";
+    }
+}
+
+typedef struct {
+    byte magic[3];
+    byte version;
+    uint32 assetCount;
+    uint64 fileLength;
+    uint64 mapOffset;
+    uint64 UNK0 <bgcolor=0x0000ff>;
+    byte signature[128] <hidden=true>;
+} HEADER;
+
+typedef struct {
+    uint64 nameHash <format=hex>;
+    uint64 dataOffset;
+    uint64 rawDataLength;
+    uint32 isZipped <format=hex, comment=isZippedComment>;
+    uint32 dataChecksum <format=hex>;
+} ASSET;
+
+struct PACK2 {
+    LittleEndian();
+
+    HEADER header;
+    FSeek(header.mapOffset);
+    ASSET assets[header.assetCount];
+
+} pack2;
