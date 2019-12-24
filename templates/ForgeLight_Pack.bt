@@ -13,22 +13,23 @@
 typedef struct {
     uint32 nameLength;
     char name[nameLength];
-    uint32 dataOffset <format=hex>;
+    uint32 dataOffset;
     uint32 dataLength;
     uint32 dataChecksum <format=hex>; // CRC32
 } ASSET;
 
 typedef struct {
-    uint32 nextChunk <format=hex>;
+    uint32 nextChunk;
     uint32 assetCount;
     ASSET assets[assetCount] <optimize=false>;
 } CHUNK;
 
 struct PACK {
 
+    BigEndian();
+
     // Loop until we run out of chunks
-    while(true)
-    {
+    while(true) {
         CHUNK chunk;
         if(chunk.nextChunk == 0)
             break;

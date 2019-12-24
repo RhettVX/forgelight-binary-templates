@@ -33,10 +33,11 @@ typedef struct {
     uint64 dataOffset;
     uint64 rawDataLength;
     uint32 isZipped <format=hex, comment=isZippedComment>;
-    uint32 dataChecksum <format=hex>;
+    uint32 dataChecksum <format=hex>; // Unknown
 } ASSET;
 
 struct PACK2 {
+
     LittleEndian();
 
     HEADER header;
