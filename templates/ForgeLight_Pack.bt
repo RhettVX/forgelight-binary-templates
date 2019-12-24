@@ -15,13 +15,13 @@ typedef struct {
     char name[nameLength];
     uint32 dataOffset <format=hex>;
     uint32 dataLength;
-    uint32 crc32Checksum <format=hex>;
+    uint32 dataChecksum <format=hex>; // CRC32
 } ASSET;
 
 typedef struct {
     uint32 nextChunk <format=hex>;
-    uint32 fileAmount;
-    ASSET assets[fileAmount] <optimize=false>;
+    uint32 assetCount;
+    ASSET assets[assetCount] <optimize=false>;
 } CHUNK;
 
 struct PACK {
