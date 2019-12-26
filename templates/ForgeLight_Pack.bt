@@ -3,37 +3,49 @@
 //
 //      File: ForgeLight_Pack.bt
 //   Authors: Rhett
-//   Version: 0.1
+//   Version: 0.2
 //   Purpose: Parse ForgeLight 'pack' asset archives.
 //  Category: Game
 // File Mask: *.pack
 //  ID Bytes: None
 //------------------------------------------------
 
-typedef struct {
-    uint32 nameLength;
+struct ASSET {
+    uint nameLength;
     char name[nameLength];
-    uint32 dataOffset;
-    uint32 dataLength;
-    uint32 dataChecksum <format=hex>; // CRC32
-} ASSET;
-
-typedef struct {
-    uint32 nextChunk;
-    uint32 assetCount;
-    ASSET assets[assetCount] <optimize=false>;
-} CHUNK;
+    uint dataOffset;
+    uint dataLength;
+    uint dataChecksum <format=hex>; // CRC32
+};
 
 struct PACK {
 
     BigEndian();
+    
+    local int totalChunks;
+    local int totalAssets;
+    local int i;
 
     // Loop until we run out of chunks
-    while(true) {
-        CHUNK chunk;
-        if(chunk.nextChunk == 0)
+    while( true ) {
+        uint nextChunk <hidden=true>;
+        uint assetCount <hidden=true>;
+
+        totalChunks++;
+        for( i = 0; i < assetCount; i++ ) {
+            totalAssets++;
+            struct ASSET asset <read=readAssetName>;
+        }
+
+        if( nextChunk == 0 )
             break;
-        FSeek(chunk.nextChunk);
-    }
+        FSeek( nextChunk );
+    };
 	
 } pack;
+
+string readAssetName( ASSET &a ) {
+    string str;
+    SPrintf( str, "'%s'", a.name );
+    return str;
+}

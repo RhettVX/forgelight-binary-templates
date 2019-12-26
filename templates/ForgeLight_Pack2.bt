@@ -3,11 +3,11 @@
 //
 //      File: ForgeLight_Pack2.bt
 //   Authors: Rhett
-//   Version: 0.1
+//   Version: 0.2
 //   Purpose: Parse ForgeLight 'pack2' asset archives.
 //  Category: Game
 // File Mask: *.pack2
-//  ID Bytes: 50 41 4B
+//  ID Bytes: 50 41 4B // PAK
 //------------------------------------------------  
 
 string isZippedComment(uint32 flag) {
@@ -18,7 +18,7 @@ string isZippedComment(uint32 flag) {
     }
 }
 
-typedef struct {
+struct HEADER {
     byte magic[3];
     byte version;
     uint32 assetCount;
@@ -26,22 +26,32 @@ typedef struct {
     uint64 mapOffset;
     uint64 UNK0 <bgcolor=0x0000ff>;
     byte signature[128] <hidden=true>;
-} HEADER;
+};
 
-typedef struct {
+struct ASSET {
     uint64 nameHash <format=hex>;
     uint64 dataOffset;
     uint64 rawDataLength;
     uint32 isZipped <format=hex, comment=isZippedComment>;
     uint32 dataChecksum <format=hex>; // Unknown
-} ASSET;
+};
 
 struct PACK2 {
 
     LittleEndian();
 
-    HEADER header;
+    struct HEADER header <bgcolor=cLtBlue>;
     FSeek(header.mapOffset);
-    ASSET assets[header.assetCount];
+
+    local int i;
+    for( i = 0; i < header.assetCount; i++ ) {
+        struct ASSET asset <read=readAssetHash, bgcolor=cLtBlue>;
+    }
 
 } pack2;
+
+string readAssetHash( ASSET &a ) {
+    string str;
+    SPrintf( str, "%016LXh", a.nameHash );
+    return str;
+}
