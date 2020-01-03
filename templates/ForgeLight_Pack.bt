@@ -7,12 +7,11 @@
 //   Purpose: Parse ForgeLight 'pack' asset archives.
 //  Category: Game
 // File Mask: *.pack
-//  ID Bytes: None
 //------------------------------------------------
 
 struct ASSET {
-    uint nameLength;
-    char name[nameLength];
+    uint nameLength <bgcolor=cLtGray>;
+    char name[nameLength] <bgcolor=cAqua>;
     uint dataOffset;
     uint dataLength;
     uint dataChecksum <format=hex>; // CRC32
@@ -34,7 +33,7 @@ struct PACK {
         totalChunks++;
         for( i = 0; i < assetCount; i++ ) {
             totalAssets++;
-            struct ASSET asset <read=readAssetName>;
+            struct ASSET asset <read=readAssetName, bgcolor=cLtBlue>;
         }
 
         if( nextChunk == 0 )

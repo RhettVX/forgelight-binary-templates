@@ -24,12 +24,12 @@ struct HEADER {
     uint32 assetCount;
     uint64 fileLength;
     uint64 mapOffset;
-    uint64 UNK0 <bgcolor=0x0000ff>;
-    byte signature[128] <hidden=true>;
+    uint64 UNK0 <bgcolor=cLtRed>;
+    byte signature[128] <bgcolor=cDkGray>;
 };
 
 struct ASSET {
-    uint64 nameHash <format=hex>;
+    uint64 nameHash <format=hex, bgcolor=cAqua>;
     uint64 dataOffset;
     uint64 rawDataLength;
     uint32 isZipped <format=hex, comment=isZippedComment>;
