@@ -3,7 +3,7 @@
 //
 //      File: ForgeLight_Pack.bt
 //   Authors: Rhett
-//   Version: 0.2
+//   Version: 0.3
 //   Purpose: Parse ForgeLight 'pack' asset archives.
 //  Category: Game
 // File Mask: *.pack
@@ -41,10 +41,14 @@ struct PACK {
         FSeek( nextChunk );
     };
 	
-} pack;
+} pack <read=readFileName, open=true>;
 
 string readAssetName( ASSET &a ) {
     string str;
     SPrintf( str, "'%s'", a.name );
     return str;
+}
+
+string readFileName( PACK &p ) {
+    return FileNameGetBase(GetFileName());
 }

@@ -3,7 +3,7 @@
 //
 //      File: ForgeLight_Pack2.bt
 //   Authors: Rhett
-//   Version: 0.2
+//   Version: 0.3
 //   Purpose: Parse ForgeLight 'pack2' asset archives.
 //  Category: Game
 // File Mask: *.pack2
@@ -21,7 +21,7 @@ string isZippedComment(uint32 flag) {
 struct HEADER {
     byte magic[3];
     byte version;
-    uint32 assetCount;
+    uint assetCount;
     uint64 fileLength;
     uint64 mapOffset;
     uint64 UNK0 <bgcolor=cLtRed>;
@@ -32,8 +32,8 @@ struct ASSET {
     uint64 nameHash <format=hex, bgcolor=cAqua>;
     uint64 dataOffset;
     uint64 rawDataLength;
-    uint32 isZipped <format=hex, comment=isZippedComment>;
-    uint32 dataChecksum <format=hex>; // Unknown
+    uint isZipped <format=hex, comment=isZippedComment>;
+    uint dataChecksum <format=hex>; // Unknown
 };
 
 struct PACK2 {
@@ -45,13 +45,27 @@ struct PACK2 {
 
     local int i;
     for( i = 0; i < header.assetCount; i++ ) {
-        struct ASSET asset <read=readAssetHash, bgcolor=cLtBlue>;
+        struct ASSET asset <read=readAssetHash, bgcolor=cLtBlue, comment=isZippedAssetComment>;
     }
 
-} pack2;
+} pack2 <read=readFileName, open=true>;
 
 string readAssetHash( ASSET &a ) {
     string str;
     SPrintf( str, "%016LXh", a.nameHash );
     return str;
+}
+
+string readFileName( PACK2 &p ) {
+    return FileNameGetBase(GetFileName());
+}
+
+string isZippedAssetComment(ASSET &a) {
+    local uint flag = a.isZipped;
+
+    if (flag == 0x01 || flag == 0x11) {
+        return "Zipped";
+    } else if (flag == 0x10 || flag == 0x00) {
+        return "Unzipped";
+    }
 }
