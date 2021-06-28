@@ -1,0 +1,149 @@
+//------------------------------------------------
+//--- 010 Editor v10.0.1 Binary Template
+//
+//      File: ForgeLight_DMOD.bt
+//   Authors: Rhett
+//   Version: 0.0
+//   Purpose: 
+//  Category: Game
+// File Mask: *.dme
+//  ID Bytes: 44 4D 4F 44 // DMOD
+//------------------------------------------------
+
+// Custom types
+typedef uchar  u8;
+typedef uint16 u16;
+typedef uint32 u32;
+typedef uint64 u64;
+
+typedef char  i8;
+typedef int16 i16;
+typedef int32 i32;
+typedef int64 i64;
+
+typedef hfloat f16;
+typedef float  f32;
+typedef double f64;
+
+struct Vector3 {
+    f32 x;
+    f32 y;
+    f32 z;
+};
+
+// Axis-Aligned Bounding Box
+struct Aabb {
+    Vector3 min;
+    Vector3 max;
+};
+
+struct VertexStream(u32 vertexCount) {
+    u32 bytesPerVertex;
+    u8 vertices[bytesPerVertex * vertexCount];
+};
+
+struct DrawCall {
+    u32 unk0;
+    u32 boneStart;
+    u32 boneCount;
+    u32 delta;
+    u32 unk1;
+    u32 vertexOffset;
+    u32 vertexCount;
+    u32 indexOffset;
+    u32 indexCount;
+};
+
+struct BoneMapEntry {
+    u16 boneIndex;
+    u16 globalIndex;
+};
+
+
+// Structures
+struct DmodHeader {
+    u8 magic[4]; // DMOD
+    u32 version;
+    u32 dmatLength;
+};
+
+struct DmodModel {
+    struct Aabb modelAabb;
+    u32 meshCount;
+};
+
+// TODO: mesh3 support
+
+struct DmodMesh4 {
+    u32 drawCallOffset;
+    u32 drawCallCount;
+    u32 boneTransformCount;
+    u32 unk0;
+    u32 vertexStreamCount;
+    u32 indexLength;
+    u32 indexCount;
+    u32 vertexCount;
+
+    struct VertexStream vertexStreams(vertexCount)[vertexStreamCount]<optimize=false>;
+    u16 indices[indexCount];
+};
+
+struct MaterialParameter {
+    u32 semanticHash;
+    u32 d3dxParamaterClass;
+    u32 d3dxParamaterType;
+    u32 dataLength;
+    u8 data[dataLength];
+};
+
+struct Material {
+    u32 nameHash;
+    u32 dataLength;
+    u32 materialDefinitionHash;
+    u32 parameterCount;
+    struct MaterialParameter parameters[parameterCount]<optimize=false>;
+};
+
+struct DmatHeader {
+    u8 magic[4]; // DMAT
+    u32 version;
+    u32 texturesLength;
+    FSkip(texturesLength); // TODO
+    u32 materialCount;
+    struct Material materials[materialCount]<optimize=false>;
+};
+
+
+// Main structure
+struct DmodFile {
+    struct DmodHeader header;
+    // FSkip(header.dmatLength); // TODO: Add dmat
+    struct DmatHeader dmatHeader;
+    // struct DmodModel model;
+
+    // if (header.version == 4) {
+    //     struct DmodMesh4 meshes[model.meshCount]<optimize=false>;
+    
+    // } else {
+    //     Printf("Unknown DMOD version: %d\n", header.version);
+    //     return 1;
+    // }
+
+    // u32 totalDrawCallCount;
+    // DrawCall drawCalls[totalDrawCallCount];
+
+    // u32 boneMapEntryCount;
+    // BoneMapEntry boneMapEntries[boneMapEntryCount];
+
+    // TODO: Bonemap
+    // uint bonemap_entry_count;
+    // struct bonemap_entry bonemap_entries[bonemap_entry_count];
+
+} data<open=true, read=ReadFileName>;
+
+
+// Helper functions
+string ReadFileName(DmodFile &f)
+{
+    return FileNameGetBase(GetFileName());
+}

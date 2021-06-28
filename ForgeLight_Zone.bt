@@ -1,0 +1,260 @@
+//------------------------------------------------
+//--- 010 Editor v11.0.1 Binary Template
+//
+//      File: ForgeLight_Zone.bt
+//   Authors: Rhett
+//   Version: 0.0
+//   Purpose: 
+//  Category: Game
+// File Mask: *.zone
+//  ID Bytes: 5A 4F 4E 45 // ZONE
+//   History: 
+//------------------------------------------------
+
+// TODO(rhett): Handle having 0 whatever
+
+LittleEndian();
+
+// Types
+typedef byte bool;
+
+typedef struct Color4
+    {
+    ubyte r;
+    ubyte g;
+    ubyte b;
+    ubyte a;
+    };
+
+typedef struct Float4
+    {
+    float x;
+    float y;
+    float z;
+    float w;
+    };
+
+// Helper Structures
+struct Flora_Part
+    {
+    uint32 layer_count;
+    struct Layers
+        {
+        struct Eco_Layer
+            {
+            float  density;
+            float  min_scale;
+            float  max_scale;
+            float  slope_peak;
+            float  slope_extent;
+            float  min_elevation;
+            float  max_elevation;
+            byte   min_alpha;
+            string flora_name;
+
+            uint32 tint_count;
+            struct Tints
+                {
+                struct Eco_Tint
+                    {
+                    Color4 color_rgba;
+                    uint32 strength;
+                    } tint[tint_count]<optimize=false>;
+                } tints;
+            
+            } layer[layer_count]<optimize=false>;
+        } layers;
+    };
+
+struct Texture_Part
+    {
+    // NOTE(rhett): strings are null-terminated
+    string name;
+    string color_nx_map;
+    string spec_blend_ny_map;
+    uint32 detail_repeat;
+    float  blend_strength;
+    float  spec_min;
+    float  spec_max;
+    float  spec_smoothness_min;
+    float  spec_smoothness_max;
+    string physics_material;
+    };
+
+struct Offsets(uint32 version)
+    {
+    uint32 ecos;
+    uint32 floras;
+    uint32 invis_walls;
+    uint32 objects;
+    uint32 lights;
+    uint32 unknowns0;
+    if (version == 4) // H1
+        {
+        uint32 decals;
+        }
+    };
+
+// Main Structures
+struct Header
+    {
+    byte    magic[4];
+    uint32  version;
+    if (version == 4) // H1
+        {
+        uint32 unk0;
+        }
+    Offsets offsets(version);
+
+    uint32 quads_per_tile;
+    float  tile_size;
+    float  tile_height;
+    uint32 verts_per_tile;
+    uint32 tiles_per_chunk;
+
+    int32 start_x;
+    int32 start_y;
+    uint32 chunks_x;
+    uint32 chunk_y;
+    } header;
+
+struct Ecos
+    {
+    uint32 eco_count;
+    struct Eco
+        {
+        uint32 index;
+
+        Texture_Part texture_part;
+        Flora_Part flora_part;
+        } eco[eco_count]<read=read_eco_name,optimize=false>;
+    } ecos;
+
+struct Floras(uint32 version)
+    {
+    uint32 flora_count;
+    struct Flora(uint32 version)
+        {
+        string name;
+        string texture;
+        string model;
+        bool   unk_bool;
+        float  unk_float0;
+        float  unk_float1;
+        if (version == 4)
+            {
+            byte unk_data[12];
+            }
+        } flora(version)[flora_count]<read=read_flora_name,optimize=false>;
+    } floras(header.version);
+
+struct Invis_Walls
+    {
+    uint32 invis_wall_count;
+    struct Invis_Wall
+        {
+
+        } invis_wall[invis_wall_count]<optimize=false>;
+    } invis_walls;
+
+struct Runtime_Objects(uint32 version)
+    {
+    uint32 runtime_object_count;
+    struct Runtime_Object(uint32 version)
+        {
+        string actor_file;
+        float unk_float0;
+        struct Instances(uint32 version)
+            {
+            uint32 instance_count;
+            struct Instance(uint32 version)
+                {
+                // Float4 translation;
+                Float4 translation;
+                Float4 rotation;
+                Float4 scale;
+                if (version == 4)
+                    {
+                    byte unk_data[29];
+                    }
+                else
+                    {
+                    uint32 unk_int;
+                    ubyte  unk_byte;
+                    float  unk_float;
+                    }
+                } instance(version)[instance_count]<optimize=false>;
+            } instances(version);
+
+        } runtime_object(version)[runtime_object_count]<read=read_object_actor,optimize=false>;
+    } runtime_objects(header.version);
+
+
+struct Lights
+    {
+    uint32 light_count;
+    struct Light
+        {
+        string name;
+        string color;
+        byte unk_chunk[75]; // TODO(rhett): figure this out
+        } light[light_count]<optimize=false>;
+    } lights;
+
+uint32 unk_int0;
+if (unk_int0 > 0)
+    {
+    Printf("!!! unk_int0 is greater than 0, investigate.");
+    }
+
+if (header.version == 4) // H1
+    {
+    struct Decals
+        {
+        uint32 decal_count;
+        struct Decal
+            {
+            uint32 unk_int0;
+            Float4 translation;
+            uint32 unk_int1;
+            uint32 unk_int2;
+            uint32 unk_int3;
+            uint32 unk_int4;
+            uint32 unk_int5;
+            string name;
+            float unk_float0;
+            uint32 unk_int6;
+            uint32 unk_int7;
+            uint32 unk_int8;
+            }decal[decal_count]<read=read_decal_name,optimize=false>;
+        } decals;
+    }
+
+// Helper Functions
+string read_decal_name(Decal &d)
+    {
+    string s;
+    SPrintf(s, "%s", d.name);
+    return s;
+    }
+
+string read_object_actor(Runtime_Object &o)
+    {
+    string s;
+    SPrintf(s, "%s", o.actor_file);
+    return s;
+    }
+
+string read_flora_name(Flora &f)
+    {
+    string s;
+    SPrintf(s, "%s", f.name);
+    return s;
+    }
+
+string read_eco_name(Eco &e)
+    {
+    string s;
+    SPrintf(s, "%s", e.texture_part.name);
+    return s;
+    }
