@@ -1,0 +1,38 @@
+typedef uchar  u8;
+typedef uint16 u16;
+typedef uint32 u32;
+typedef uint64 u64;
+
+typedef char  i8;
+typedef int16 i16;
+typedef int32 i32;
+typedef int64 i64;
+
+typedef hfloat f16;
+typedef float  f32;
+typedef double f64;
+
+struct MaterialParameter {
+    u32 semanticHash;
+    u32 d3dxParamaterClass;
+    u32 d3dxParamaterType;
+    u32 dataLength;
+    u8 data[dataLength];
+};
+
+struct Material {
+    u32 nameHash;
+    u32 dataLength;
+    u32 materialDefinitionHash;
+    u32 parameterCount;
+    struct MaterialParameter parameters[parameterCount]<optimize=false>;
+};
+
+struct DmatHeader {
+    u8 magic[4]; // DMAT
+    u32 version;
+    u32 texturesLength;
+    FSkip(texturesLength); // TODO
+    u32 materialCount;
+    struct Material materials[materialCount]<optimize=false>;
+} dmatHeader;

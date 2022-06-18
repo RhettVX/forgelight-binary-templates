@@ -34,6 +34,13 @@ typedef struct Float4
     float w;
     };
 
+typedef struct Float3
+    {
+    float x;
+    float y;
+    float z;
+    };
+
 // Helper Structures
 struct Flora_Part
     {
@@ -89,7 +96,7 @@ struct Offsets(uint32 version)
     uint32 objects;
     uint32 lights;
     uint32 unknowns0;
-    if (version == 4) // H1
+    if (version == 4 || version == 5) // H1
         {
         uint32 decals;
         }
@@ -100,7 +107,7 @@ struct Header
     {
     byte    magic[4];
     uint32  version;
-    if (version == 4) // H1
+    if (version == 4 || version == 5) // H1
         {
         uint32 unk0;
         }
@@ -141,7 +148,7 @@ struct Floras(uint32 version)
         bool   unk_bool;
         float  unk_float0;
         float  unk_float1;
-        if (version == 4)
+        if (version == 4 || version == 5)
             {
             byte unk_data[12];
             }
@@ -170,20 +177,51 @@ struct Runtime_Objects(uint32 version)
             struct Instance(uint32 version)
                 {
                 // Float4 translation;
-                Float4 translation;
-                Float4 rotation;
-                Float4 scale;
+                Float4 translation <read=Str("%f, %f, %f", this.x, this.y, this.z)>;
+                Float4 rotation <read=Str("%f, %f, %f", this.x, this.y, this.z)>;
+                Float4 scale <read=Str("%f, %f, %f", this.x, this.y, this.z)>;
                 if (version == 4)
                     {
                     byte unk_data[29];
                     }
+                else if (version == 5)
+                    {
+                    byte   unk_data[5];
+                    float  unk_float;
+
+                    uint32 uint_pair_count;
+                    struct Uint_Pair
+                        {
+                        uint32 key;
+                        uint32 value;
+                        } uint_pairs[uint_pair_count]<read=Str("%#x : %u", this.key, this.value)>;
+
+                    uint32 float_pair_count;
+                    struct Float_Pair
+                        {
+                        uint32 key;
+                        float  value;
+                        } float_pairs[float_pair_count]<read=Str("%#x : %f", this.key, this.value)>;
+
+                    uint32 unk_int_3;
+
+                    uint32 vector4_pair_count;
+                    struct Vector4_Pair
+                        {   
+                        uint32 key;
+                        Float4 value <read=Str("%f, %f, %f, %f", this.x, this.y, this.z, this.w)>;
+                        } vector4_pairs[vector4_pair_count]<read=Str("%x", this.key)>;
+
+                    byte unk_data_2[5];
+                    }
                 else
                     {
                     uint32 unk_int;
-                    ubyte  unk_byte;
+                    ubyte  unk_byte1;
+                    // ubyte  unk_byte2;
                     float  unk_float;
                     }
-                } instance(version)[instance_count]<optimize=false>;
+                } instance(version)[instance_count]<read=Str("%f, %f, %f", this.translation.x, this.translation.y, this.translation.z),optimize=false>;
             } instances(version);
 
         } runtime_object(version)[runtime_object_count]<read=read_object_actor,optimize=false>;
@@ -207,7 +245,7 @@ if (unk_int0 > 0)
     Printf("!!! unk_int0 is greater than 0, investigate.");
     }
 
-if (header.version == 4) // H1
+if (header.version == 4 || header.version == 5) // H1
     {
     struct Decals
         {

@@ -25,11 +25,19 @@ typedef hfloat f16;
 typedef float  f32;
 typedef double f64;
 
-struct Vector3 {
+typedef struct Vector3 {
     f32 x;
     f32 y;
     f32 z;
 };
+
+/*
+struct VertexGroup {
+    Vector3 vx;
+    Vector3 vy;
+    Vector3 vz;
+};
+*/
 
 // Axis-Aligned Bounding Box
 struct Aabb {
@@ -37,9 +45,13 @@ struct Aabb {
     Vector3 max;
 };
 
+struct VertexGroup(u32 bytesPerVertex) {
+    u8 bytes[bytesPerVertex];
+};
+
 struct VertexStream(u32 vertexCount) {
     u32 bytesPerVertex;
-    u8 vertices[bytesPerVertex * vertexCount];
+    VertexGroup vertices(bytesPerVertex)[vertexCount]<optimize=false>;
 };
 
 struct DrawCall {
@@ -80,12 +92,41 @@ struct DmodMesh4 {
     u32 boneTransformCount;
     u32 unk0;
     u32 vertexStreamCount;
-    u32 indexLength;
+    u16 indexLength;
+    u16 unk1;
     u32 indexCount;
     u32 vertexCount;
+    /*
+    u32 bytesPerVertex;
+    // <read=Str("%f   %f   %f", this.x, this.y, this.z)>
+    struct
+    {
+        f32 x;
+        f32 y;
+        f32 z;
+        u32 blendWeight;
+        u32 blendIndices;
+    } vertices[vertexCount] <read=Str("%9f %9f %9f", this.x, this.y, this.z)>;
+    
+    u32 bytesPerVertex2;
+    struct
+    {
+        u32 tangent;
+        u32 binormal;
+        u32 color;
+        f16 texcoord1[2];
+        f16 texcoord2[2];
+        f16 texcoord3[2];
+    } vertices2[vertexCount];
+    */
 
     struct VertexStream vertexStreams(vertexCount)[vertexStreamCount]<optimize=false>;
-    u16 indices[indexCount];
+    if (indexLength == 2) {
+        u16 indices[indexCount];
+    }
+    else if (indexLength == 4) {
+        u32 indices[indexCount];
+    }
 };
 
 struct MaterialParameter {
@@ -116,24 +157,24 @@ struct DmatHeader {
 
 // Main structure
 struct DmodFile {
+    LittleEndian();
     struct DmodHeader header;
     // FSkip(header.dmatLength); // TODO: Add dmat
     struct DmatHeader dmatHeader;
-    // struct DmodModel model;
-
-    // if (header.version == 4) {
-    //     struct DmodMesh4 meshes[model.meshCount]<optimize=false>;
+    struct DmodModel model;
     
-    // } else {
-    //     Printf("Unknown DMOD version: %d\n", header.version);
-    //     return 1;
-    // }
+    if (header.version == 4) {
+        struct DmodMesh4 meshes[model.meshCount]<optimize=false>;
+    } else {
+        Printf("Unknown DMOD version: %d\n", header.version);
+        return 1;
+    }
 
-    // u32 totalDrawCallCount;
-    // DrawCall drawCalls[totalDrawCallCount];
+    //u32 totalDrawCallCount;
+    //DrawCall drawCalls[totalDrawCallCount];
 
-    // u32 boneMapEntryCount;
-    // BoneMapEntry boneMapEntries[boneMapEntryCount];
+    //u32 boneMapEntryCount;
+    //BoneMapEntry boneMapEntries[boneMapEntryCount];
 
     // TODO: Bonemap
     // uint bonemap_entry_count;
