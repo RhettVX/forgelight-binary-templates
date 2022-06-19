@@ -129,6 +129,33 @@ struct DmodMesh4 {
     }
 };
 
+struct DmodMesh3 {
+    u8 unk_data[16];
+    u32 bytesPerVertex;
+    u32 vertexCount;
+    u32 indexLength;
+    u32 indexCount;
+    
+    struct
+    {
+        f32 x;
+        f32 y;
+        f32 z;
+        u32 tangent;
+        u32 binormal;
+        f16 texcoord_x;
+        f16 texcoord_y;
+        u8 unk_data[bytesPerVertex-12-12];
+    } vertices[vertexCount] <read=Str("%9f %9f %9f", this.x, this.y, this.z)>;
+
+    if (indexLength == 2) {
+        u16 indices[indexCount];
+    }
+    else if (indexLength == 4) {
+        u32 indices[indexCount];
+    }
+};
+
 struct MaterialParameter {
     u32 semanticHash;
     u32 d3dxParamaterClass;
@@ -165,6 +192,8 @@ struct DmodFile {
     
     if (header.version == 4) {
         struct DmodMesh4 meshes[model.meshCount]<optimize=false>;
+    } else if (header.version == 3) {
+        struct DmodMesh3 meshes[model.meshCount]<optimize=false>;
     } else {
         Printf("Unknown DMOD version: %d\n", header.version);
         return 1;
