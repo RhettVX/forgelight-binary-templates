@@ -12,6 +12,8 @@ typedef hfloat f16;
 typedef float  f32;
 typedef double f64;
 
+LittleEndian();
+
 struct MaterialParameter {
     u32 semanticHash;
     u32 d3dxParamaterClass;

@@ -146,7 +146,7 @@ struct DmodMesh3 {
         f16 texcoord_x;
         f16 texcoord_y;
         u8 unk_data[bytesPerVertex-12-12];
-    } vertices[vertexCount] <read=Str("%9f %9f %9f", this.x, this.y, this.z)>;
+    } vertices[vertexCount] <read=Str("%9f %9f %9f", this.x, this.y, this.z), optimize=false>;
 
     if (indexLength == 2) {
         u16 indices[indexCount];

@@ -186,7 +186,8 @@ struct Runtime_Objects(uint32 version)
                     }
                 else if (version == 5)
                     {
-                    byte   unk_data[5];
+                    uint32 id;
+                    byte   unk_data[1];
                     float  unk_float;
 
                     uint32 uint_pair_count;
@@ -218,7 +219,7 @@ struct Runtime_Objects(uint32 version)
                     {
                     uint32 unk_int;
                     ubyte  unk_byte1;
-                    // ubyte  unk_byte2;
+                    ubyte  unk_byte2;
                     float  unk_float;
                     }
                 } instance(version)[instance_count]<read=Str("%f, %f, %f", this.translation.x, this.translation.y, this.translation.z),optimize=false>;
